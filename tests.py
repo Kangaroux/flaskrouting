@@ -14,7 +14,7 @@ def new_mock():
   return (mock.add_url_rule, mock)
 
 
-def test_no_endpoints():
+def test_no_pages():
   m, mock = new_mock()
 
   path("test1", [
@@ -90,7 +90,7 @@ def test_bad_nested_empty_route():
   except ValueError:
     pass
 
-def test_empty_endpoint():
+def test_page_with_name_no_path():
   m, mock = new_mock()
 
   path("", [
@@ -102,7 +102,19 @@ def test_empty_endpoint():
   assert args[0] == "/"
   assert kwargs["endpoint"] == "page"
 
-def test_bad_empty_endpoint():
+def test_page_no_name_with_path():
+  m, mock = new_mock()
+
+  path("dir", [
+    page("/", view_func)
+  ]).register(mock)
+
+  args, kwargs = m.call_args
+
+  assert args[0] == "/dir"
+  assert kwargs["endpoint"] == "dir"
+
+def test_bad_empty_page():
   m, mock = new_mock()
 
   try:
