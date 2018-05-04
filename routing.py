@@ -59,7 +59,7 @@ class Route(BaseRoute):
 class Endpoint(BaseRoute):
   def __init__(self, url, view, methods=None, name=None):
     self.view = view
-    self.url = url
+    self.url = url.lstrip("/")
 
     if not url and not name:
       raise TypeError("An endpoint without a url must have a name")
@@ -70,9 +70,11 @@ class Endpoint(BaseRoute):
   def register(self, app, parts):
     """ Registers the endpoint with the app with the given name for lookups """
     name = ".".join(parts + [self.name])
-    url = "/%s" % "/".join(parts + [self.url])
+    url = "/%s" % "/".join(parts + [self.url]).rstrip("/")
 
-    if TRAILING_SLASHES:
+    # Append a trailing slash to the URL if we're doing that for every URL or if
+    # this route was defined explicitly with a trailing slash
+    if TRAILING_SLASHES or self.url.endswith("/"):
       url += "/"
 
     try:

@@ -159,3 +159,25 @@ def test_bad_route_child():
     assert False
   except TypeError:
     pass
+
+def test_leading_slash():
+  m, mock = new_mock()
+
+  route("dir", [
+    endpoint("/endpoint", view_func)
+  ]).register(mock)
+
+  args, _ = m.call_args
+
+  assert args[0] == "/dir/endpoint"
+
+def test_explicit_trailing_slash():
+  m, mock = new_mock()
+
+  route("dir", [
+    endpoint("/endpoint/", view_func)
+  ]).register(mock)
+
+  args, _ = m.call_args
+
+  assert args[0] == "/dir/endpoint/"
