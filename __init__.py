@@ -1,1 +1,1 @@
-from routing import route, endpoint
+from routing import route, endpoint, TRAILING_SLASHES

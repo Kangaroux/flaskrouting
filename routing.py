@@ -47,8 +47,13 @@ class Route(BaseRoute):
 
       if not parts:
         parts = []
+      elif not self.name:
+        raise ValueError("Nested route cannot have an empty name")
 
-      r.register(app, parts + [self.name])
+      if self.name:
+        parts += [self.name]
+
+      r.register(app, parts)
 
 
 class Endpoint(BaseRoute):
