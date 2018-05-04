@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 from routing import endpoint, route
 
 
+class BadViewClass: pass
 class ViewClass(flask.views.View): pass
 def view_func(): pass
 
@@ -34,7 +35,6 @@ def test_view_class():
 
   assert args[0] == "/dir/endpoint"
   assert kwargs["endpoint"] == "dir.endpoint"
-  assert kwargs["methods"] == ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
   assert mock.view_functions.get.call_args[0][1].view_class == ViewClass
 
@@ -50,7 +50,6 @@ def test_view_function():
 
   assert args[0] == "/dir/endpoint"
   assert kwargs["endpoint"] == "dir.endpoint"
-  assert kwargs["methods"] == ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
   assert mock.view_functions.get.call_args[0][1] == view_func
 
@@ -89,4 +88,50 @@ def test_bad_nested_empty_route():
 
     assert False
   except ValueError:
+    pass
+
+def test_all_methods():
+  m, mock = new_mock()
+
+  route("", [
+    endpoint("endpoint", view_func)
+  ]).register(mock)
+
+  _, kwargs = m.call_args
+
+  assert kwargs["methods"] == ["GET", "POST", "PUT", "PATCH", "DELETE"]
+
+def test_some_methods():
+  m, mock = new_mock()
+
+  route("", [
+    endpoint("endpoint", view_func, methods=["GET", "POST"])
+  ]).register(mock)
+
+  _, kwargs = m.call_args
+
+  assert kwargs["methods"] == ["GET", "POST"]
+
+def test_bad_view_class():
+  m, mock = new_mock()
+
+  try:
+    route("", [
+      endpoint("endpoint", BadViewClass)
+    ]).register(mock)
+
+    assert False
+  except TypeError:
+    pass
+
+def test_bad_route_child():
+  m, mock = new_mock()
+
+  try:
+    route("", [
+      "endpoint"
+    ]).register(mock)
+
+    assert False
+  except TypeError:
     pass

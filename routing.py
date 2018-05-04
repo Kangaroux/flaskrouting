@@ -43,7 +43,7 @@ class Route(BaseRoute):
   def register(self, app, parts=None):
     for r in self.routes:
       if not isinstance(r, BaseRoute):
-        raise TypeError("Route must be a subclass of BaseRoute (is %s)", r)
+        raise TypeError("Route must be a subclass of BaseRoute (is %s)" % r)
 
       if not parts:
         parts = []
@@ -79,6 +79,9 @@ class Endpoint(BaseRoute):
       is_class_view = issubclass(self.view, flask.views.View)
     except TypeError:
       is_class_view = False
+    else:
+      if not is_class_view:
+        raise TypeError("View must be a view class or a view function (is %s)" % self.view)
 
     # Use an existing view function otherwise flask gets upset because it thinks
     # we're trying to overwrite it
