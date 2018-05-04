@@ -261,3 +261,27 @@ def test_bad_instance_child():
     assert 0
   except TypeError:
     pass
+
+def test_leading_slash_path():
+  m, mock = new_mock()
+  
+  path("/dir", [
+    page("/page", view_func)
+  ]).register(mock)
+
+  args, kwargs = m.call_args
+
+  assert args[0] == "/dir/page"
+  assert kwargs["endpoint"] == "dir.page"
+
+def test_bad_path_trailing_slash():
+  m, mock = new_mock()
+
+  try:
+    path("dir/", [
+      page("page", view_func)
+    ]).register(mock)
+
+    assert 0
+  except ValueError:
+    pass

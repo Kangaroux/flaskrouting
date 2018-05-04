@@ -33,7 +33,10 @@ class BaseRouteComponent:
 
 class Path(BaseRouteComponent):
   def __init__(self, name, routes):
-    self.name = name
+    if name.endswith("/"):
+      raise ValueError("Path name cannot end in a trailing slash")
+
+    self.name = name.lstrip("/")
     self.routes = routes
 
   def register(self, app, url_parts=None, name_parts=None):
@@ -90,7 +93,7 @@ class Page(BaseRouteComponent):
       self.name = name
     else:
       self.name = self.url or None
-      
+
     self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
   def register(self, app, url_parts, name_parts):
