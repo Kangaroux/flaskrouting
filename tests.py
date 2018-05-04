@@ -102,17 +102,17 @@ def test_page_with_name_no_path():
   assert args[0] == "/"
   assert kwargs["endpoint"] == "page"
 
-def test_page_no_name_with_path():
+def test_page_slash_with_path():
   m, mock = new_mock()
 
   path("dir", [
-    page("/", view_func)
+    page("/page/", view_func)
   ]).register(mock)
 
   args, kwargs = m.call_args
 
-  assert args[0] == "/dir"
-  assert kwargs["endpoint"] == "dir"
+  assert args[0] == "/dir/page/"
+  assert kwargs["endpoint"] == "dir.page"
 
 def test_bad_empty_page():
   m, mock = new_mock()

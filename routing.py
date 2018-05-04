@@ -87,12 +87,16 @@ class Instance(BaseRouteComponent):
 class Page(BaseRouteComponent):
   def __init__(self, url, view, methods=None, name=None):
     self.view = view
-    self.url = url.lstrip("/")
+
+    if url == "/":
+      self.url = url
+    else:
+      self.url = url.lstrip("/")
 
     if name is not None:
       self.name = name
     else:
-      self.name = self.url or None
+      self.name = self.url.strip("/") or None
 
     self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
