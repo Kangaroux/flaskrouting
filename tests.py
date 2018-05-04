@@ -1,7 +1,7 @@
 import flask.views
 from unittest.mock import Mock, patch
 
-from routing import page, route
+from routing import instance, page, route
 
 
 class BadViewClass: pass
@@ -181,3 +181,31 @@ def test_explicit_trailing_slash():
   args, _ = m.call_args
 
   assert args[0] == "/dir/page/"
+
+def test_instance():
+  m, mock = new_mock()
+
+  route("dir", [
+    instance("<int:instanceid>", [
+      page("page", view_func)
+    ])
+  ]).register(mock)
+
+  args, kwargs = m.call_args
+
+  assert args[0] == "/dir/<int:instanceid>/page"
+  assert kwargs["endpoint"] == "dir.page"
+
+def test_named_instance():
+  m, mock = new_mock()
+
+  route("dir", [
+    instance("<int:instanceid>", name="instance", routes=[
+      page("page", view_func)
+    ])
+  ]).register(mock)
+
+  args, kwargs = m.call_args
+
+  assert args[0] == "/dir/<int:instanceid>/page"
+  assert kwargs["endpoint"] == "dir.instance.page"

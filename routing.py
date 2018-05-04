@@ -12,6 +12,13 @@ def route(name, routes):
   """
   return Route(name, routes)
 
+def instance(param, routes, name=None):
+  """ Creates a new instance definition. An instance is a dynamic part of the
+  URL that gets passed to the view as a parameter. For example,
+  `/user/<int:userid>` has an instance variable `userid`.
+  """
+  return Instance(param, routes, name) 
+
 def page(url, view, methods=None, name=None):
   """ Creates a new page definition. A page points to the actual view that will
   process the request. 
@@ -32,7 +39,7 @@ class Route(BaseRoute):
   def register(self, app, url_parts=None, name_parts=None):
     for r in self.routes:
       if not isinstance(r, BaseRoute):
-        raise TypeError("Route must be a subclass of BaseRoute (is %s)" % r)
+        raise TypeError("Child must be a subclass of BaseRoute (is %s)" % r)
 
       if not url_parts:
         url_parts = []
@@ -45,6 +52,31 @@ class Route(BaseRoute):
       if self.name:
         name_parts += [self.name]
         url_parts += [self.name]
+
+      r.register(app, url_parts, name_parts)
+
+
+class Instance(BaseRoute):
+  def __init__(self, param, routes, name=None):
+    if param.startswith("/") or param.endswith("/"):
+      raise ValueError("An instance parameter cannot start or end with a slash")
+
+    self.name = name
+    self.param = param
+    self.routes = routes
+
+  def register(self, app, url_parts=None, name_parts=None):
+    if url_parts is None or name_parts is None:
+      raise Exception("An instance parameter must be wrapped in a route")
+
+    for r in self.routes:
+      if not isinstance(r, BaseRoute):
+        raise TypeError("Child must be a subclass of BaseRoute (is %s)" % r)
+
+      url_parts += [self.param]
+
+      if self.name:
+        name_parts += [self.name]
 
       r.register(app, url_parts, name_parts)
 
