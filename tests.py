@@ -1,7 +1,7 @@
 import flask.views
 from unittest.mock import Mock, patch
 
-from routing import endpoint, route
+from routing import page, route
 
 
 class BadViewClass: pass
@@ -27,14 +27,14 @@ def test_view_class():
   m, mock = new_mock()
 
   route("dir", [
-    endpoint("endpoint", ViewClass)
+    page("page", ViewClass)
   ]).register(mock)
 
   assert m.called
   args, kwargs = m.call_args
 
-  assert args[0] == "/dir/endpoint"
-  assert kwargs["endpoint"] == "dir.endpoint"
+  assert args[0] == "/dir/page"
+  assert kwargs["endpoint"] == "dir.page"
 
   assert mock.view_functions.get.call_args[0][1].view_class == ViewClass
 
@@ -42,14 +42,14 @@ def test_view_function():
   m, mock = new_mock()
 
   route("dir", [
-    endpoint("endpoint", view_func)
+    page("page", view_func)
   ]).register(mock)
 
   assert m.called
   args, kwargs = m.call_args
 
-  assert args[0] == "/dir/endpoint"
-  assert kwargs["endpoint"] == "dir.endpoint"
+  assert args[0] == "/dir/page"
+  assert kwargs["endpoint"] == "dir.page"
 
   assert mock.view_functions.get.call_args[0][1] == view_func
 
@@ -58,23 +58,23 @@ def test_trailing_slashes():
   m, mock = new_mock()
   
   route("dir", [
-    endpoint("endpoint", view_func)
+    page("page", view_func)
   ]).register(mock)
 
   args, _ = m.call_args
 
-  assert args[0] == "/dir/endpoint/"
+  assert args[0] == "/dir/page/"
 
 def test_empty_route():
   m, mock = new_mock()
 
   route("", [
-    endpoint("endpoint", view_func)
+    page("page", view_func)
   ]).register(mock)
 
   args, _ = m.call_args
 
-  assert args[0] == "/endpoint"
+  assert args[0] == "/page"
 
 def test_bad_nested_empty_route():
   m, mock = new_mock()
@@ -82,7 +82,7 @@ def test_bad_nested_empty_route():
   try:
     route("dir", [
       route("", [
-        endpoint("endpoint", view_func)
+        page("page", view_func)
       ])
     ]).register(mock)
 
@@ -94,20 +94,20 @@ def test_empty_endpoint():
   m, mock = new_mock()
 
   route("", [
-    endpoint("", view_func, name="endpoint")
+    page("", view_func, name="page")
   ]).register(mock)
 
   args, kwargs = m.call_args
 
   assert args[0] == "/"
-  assert kwargs["endpoint"] == "endpoint"
+  assert kwargs["endpoint"] == "page"
 
 def test_bad_empty_endpoint():
   m, mock = new_mock()
 
   try:
     route("", [
-      endpoint("", view_func)
+      page("", view_func)
     ]).register(mock)
 
     assert False
@@ -118,7 +118,7 @@ def test_all_methods():
   m, mock = new_mock()
 
   route("", [
-    endpoint("endpoint", view_func)
+    page("page", view_func)
   ]).register(mock)
 
   _, kwargs = m.call_args
@@ -129,7 +129,7 @@ def test_some_methods():
   m, mock = new_mock()
 
   route("", [
-    endpoint("endpoint", view_func, methods=["GET", "POST"])
+    page("page", view_func, methods=["GET", "POST"])
   ]).register(mock)
 
   _, kwargs = m.call_args
@@ -141,7 +141,7 @@ def test_bad_view_class():
 
   try:
     route("", [
-      endpoint("endpoint", BadViewClass)
+      page("page", BadViewClass)
     ]).register(mock)
 
     assert False
@@ -153,7 +153,7 @@ def test_bad_route_child():
 
   try:
     route("", [
-      "endpoint"
+      "page"
     ]).register(mock)
 
     assert False
@@ -164,20 +164,20 @@ def test_leading_slash():
   m, mock = new_mock()
 
   route("dir", [
-    endpoint("/endpoint", view_func)
+    page("/page", view_func)
   ]).register(mock)
 
   args, _ = m.call_args
 
-  assert args[0] == "/dir/endpoint"
+  assert args[0] == "/dir/page"
 
 def test_explicit_trailing_slash():
   m, mock = new_mock()
 
   route("dir", [
-    endpoint("/endpoint/", view_func)
+    page("/page/", view_func)
   ]).register(mock)
 
   args, _ = m.call_args
 
-  assert args[0] == "/dir/endpoint/"
+  assert args[0] == "/dir/page/"

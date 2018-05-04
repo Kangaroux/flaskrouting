@@ -6,28 +6,28 @@ TRAILING_SLASHES = False
 
 def route(name, routes):
   """ Creates a new route. A route is everything in the url up until the final
-  endpoint. Example:
+  page. Example:
 
   route("api", [
-    endpoint("/myendpoint", MyView)
+    page("/myendpoint", MyView)
   ])
 
-  Creates an endpoint at "/api/myendpoint" which uses the view MyView
+  Creates an page at "/api/myendpoint" which uses the view MyView
   """
   return Route(name, routes)
 
-def endpoint(url, view, methods=None, name=None):
-  """ Creates a new endpoint. An endpoint points to a specific view or view class.
+def page(url, view, methods=None, name=None):
+  """ Creates a new page. An page points to a specific view or view class.
   Example:
 
   route("api", [
-    endpoint("/myendpoint", MyView, methods=["GET", "POST"])
+    page("/myendpoint", MyView, methods=["GET", "POST"])
   ])
 
-  Creates an endpoint at "/api/myendpoint" which uses the view MyView, and only
+  Creates an page at "/api/myendpoint" which uses the view MyView, and only
   accepts the HTTP methods "GET" and "POST"
   """
-  return Endpoint(url, view, methods=methods, name=name)
+  return Page(url, view, methods=methods, name=name)
 
 
 class BaseRoute:
@@ -56,19 +56,19 @@ class Route(BaseRoute):
       r.register(app, parts)
 
 
-class Endpoint(BaseRoute):
+class Page(BaseRoute):
   def __init__(self, url, view, methods=None, name=None):
     self.view = view
     self.url = url.lstrip("/")
 
     if not url and not name:
-      raise TypeError("An endpoint without a url must have a name")
+      raise TypeError("An page without a url must have a name")
 
     self.name = name or self.url
     self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
   def register(self, app, parts):
-    """ Registers the endpoint with the app with the given name for lookups """
+    """ Registers the page with the app with the given name for lookups """
     name = ".".join(parts + [self.name])
     url = "/%s" % "/".join(parts + [self.url]).rstrip("/")
 
