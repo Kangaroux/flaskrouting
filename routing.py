@@ -5,33 +5,22 @@ TRAILING_SLASHES = False
 
 
 def route(name, routes):
-  """ Creates a new route. A route is everything in the url up until the final
-  page. Example:
-
-  route("api", [
-    page("/myendpoint", MyView)
-  ])
-
-  Creates an page at "/api/myendpoint" which uses the view MyView
+  """ Creates a new route definition. A route is considered the part of the URL
+  that comes before the last forward slash. For example, `/user/account/` has a
+  route of `/user/account` and the page is `/`. If the trailing slash is missing,
+  the route would be `/user` and the page would be `/account`
   """
   return Route(name, routes)
 
 def page(url, view, methods=None, name=None):
-  """ Creates a new page. An page points to a specific view or view class.
-  Example:
-
-  route("api", [
-    page("/myendpoint", MyView, methods=["GET", "POST"])
-  ])
-
-  Creates an page at "/api/myendpoint" which uses the view MyView, and only
-  accepts the HTTP methods "GET" and "POST"
+  """ Creates a new page definition. A page points to the actual view that will
+  process the request. 
   """
   return Page(url, view, methods=methods, name=name)
 
 
 class BaseRoute:
-  def register(self, app, parts):
+  def register(self, app, url_parts, name_parts):
     pass
 
 
@@ -40,20 +29,24 @@ class Route(BaseRoute):
     self.name = name
     self.routes = routes
 
-  def register(self, app, parts=None):
+  def register(self, app, url_parts=None, name_parts=None):
     for r in self.routes:
       if not isinstance(r, BaseRoute):
         raise TypeError("Route must be a subclass of BaseRoute (is %s)" % r)
 
-      if not parts:
-        parts = []
+      if not url_parts:
+        url_parts = []
+
+      if not name_parts:
+        name_parts = []
       elif not self.name:
         raise ValueError("Nested route cannot have an empty name")
 
       if self.name:
-        parts += [self.name]
+        name_parts += [self.name]
+        url_parts += [self.name]
 
-      r.register(app, parts)
+      r.register(app, url_parts, name_parts)
 
 
 class Page(BaseRoute):
@@ -67,10 +60,10 @@ class Page(BaseRoute):
     self.name = name or self.url
     self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
-  def register(self, app, parts):
+  def register(self, app, url_parts, name_parts):
     """ Registers the page with the app with the given name for lookups """
-    name = ".".join(parts + [self.name])
-    url = "/%s" % "/".join(parts + [self.url]).rstrip("/")
+    name = ".".join(name_parts + [self.name])
+    url = "/%s" % "/".join(url_parts + [self.url]).rstrip("/")
 
     # Append a trailing slash to the URL if we're doing that for every URL or if
     # this route was defined explicitly with a trailing slash
