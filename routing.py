@@ -1,6 +1,9 @@
 import flask.views
 
 
+TRAILING_SLASHES = False
+
+
 def route(name, routes):
   """ Creates a new route. A route is everything in the url up until the final
   endpoint. Example:
@@ -24,11 +27,11 @@ def endpoint(url, view, methods=None):
   Creates an endpoint at "/api/myendpoint" which uses the view MyView, and only
   accepts the HTTP methods "GET" and "POST"
   """
-  return Endpoint(view, url, methods)
+  return Endpoint(url, view, methods)
 
 
 class BaseRoute:
-  def register(self, app, names):
+  def register(self, app, parts):
     pass
 
 
@@ -37,19 +40,19 @@ class Route(BaseRoute):
     self.name = name
     self.routes = routes
 
-  def register(self, app, names=None):
+  def register(self, app, parts=None):
     for r in self.routes:
       if not isinstance(r, BaseRoute):
-        raise TypeError("Route must a subclass of BaseRoute (is %s)", r)
+        raise TypeError("Route must be a subclass of BaseRoute (is %s)", r)
 
-      if not names:
-        names = []
+      if not parts:
+        parts = []
 
-      r.register(app, names + [self.name])
+      r.register(app, parts + [self.name])
 
 
 class Endpoint(BaseRoute):
-  def __init__(self, view, url, methods=None):
+  def __init__(self, url, view, methods=None):
     self.view = view
     self.url = url
 
@@ -58,14 +61,23 @@ class Endpoint(BaseRoute):
     else:
       self.methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
-  def register(self, app, names):
+  def register(self, app, parts):
     """ Registers the endpoint with the app with the given name for lookups """
-    url = "/%s%s" % ("/".join(names), self.url)
-    name = ".".join(names)
+    parts += [self.url]
+    name = ".".join(parts)
+    url = "/%s" % "/".join(parts)
+
+    if TRAILING_SLASHES:
+      url += "/"
+
+    try:
+      is_class_view = issubclass(self.view, flask.views.View)
+    except TypeError:
+      is_class_view = False
 
     # Use an existing view function otherwise flask gets upset because it thinks
     # we're trying to overwrite it
-    if issubclass(self.view, flask.views.View):
+    if is_class_view:
       view = app.view_functions.get(name, self.view.as_view(name))
     else:
       view = app.view_functions.get(name, self.view)
