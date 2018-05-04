@@ -86,7 +86,7 @@ def test_bad_nested_empty_route():
       ])
     ]).register(mock)
 
-    assert False
+    assert 0
   except ValueError:
     pass
 
@@ -110,8 +110,8 @@ def test_bad_empty_endpoint():
       page("", view_func)
     ]).register(mock)
 
-    assert False
-  except TypeError:
+    assert 0
+  except Exception:
     pass
 
 def test_all_methods():
@@ -144,7 +144,7 @@ def test_bad_view_class():
       page("page", BadViewClass)
     ]).register(mock)
 
-    assert False
+    assert 0
   except TypeError:
     pass
 
@@ -156,7 +156,7 @@ def test_bad_route_child():
       "page"
     ]).register(mock)
 
-    assert False
+    assert 0
   except TypeError:
     pass
 
@@ -209,3 +209,43 @@ def test_named_instance():
 
   assert args[0] == "/dir/<int:instanceid>/page"
   assert kwargs["endpoint"] == "dir.instance.page"
+
+def test_bad_instance():
+  m, mock = new_mock()
+
+  try:
+    path("dir", [
+      instance("/<int:instanceid>/", [
+        page("page", view_func)
+      ])
+    ]).register(mock)
+
+    assert 0
+  except ValueError:
+    pass
+
+def test_root_instance():
+  m, mock = new_mock()
+
+  try:
+    instance("<int:instanceid>", [
+      page("page", view_func)
+    ]).register(mock)
+
+    assert 0
+  except Exception:
+    pass
+
+def test_bad_instance_child():
+  m, mock = new_mock()
+
+  try:
+    path("dir", [
+      instance("<int:instanceid>", [
+        view_func
+      ])
+    ]).register(mock)
+
+    assert 0
+  except TypeError:
+    pass

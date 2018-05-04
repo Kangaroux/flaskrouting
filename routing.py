@@ -86,16 +86,26 @@ class Page(BaseRouteComponent):
     self.view = view
     self.url = url.lstrip("/")
 
-    if not url and not name:
-      raise TypeError("An page without a url must have a name")
-
-    self.name = name or self.url
+    if name is not None:
+      self.name = name
+    else:
+      self.name = self.url or None
+      
     self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
   def register(self, app, url_parts, name_parts):
     """ Registers the page with the app with the given name for lookups """
-    name = ".".join(name_parts + [self.name])
-    url = "/%s" % "/".join(url_parts + [self.url]).rstrip("/")
+    if self.name:
+      name_parts += [self.name]
+
+    if self.url:
+      url_parts += [self.url]
+
+    if not name_parts:
+      raise Exception("A page or parent path must have a name")
+
+    name = ".".join(name_parts)
+    url = "/%s" % "/".join(url_parts).rstrip("/")
 
     # Append a trailing slash to the URL if we're doing that for every URL or if
     # this path was defined explicitly with a trailing slash
