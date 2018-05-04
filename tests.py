@@ -90,6 +90,30 @@ def test_bad_nested_empty_route():
   except ValueError:
     pass
 
+def test_empty_endpoint():
+  m, mock = new_mock()
+
+  route("", [
+    endpoint("", view_func, name="endpoint")
+  ]).register(mock)
+
+  args, kwargs = m.call_args
+
+  assert args[0] == "/"
+  assert kwargs["endpoint"] == "endpoint"
+
+def test_bad_empty_endpoint():
+  m, mock = new_mock()
+
+  try:
+    route("", [
+      endpoint("", view_func)
+    ]).register(mock)
+
+    assert False
+  except TypeError:
+    pass
+
 def test_all_methods():
   m, mock = new_mock()
 

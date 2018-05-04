@@ -16,7 +16,7 @@ def route(name, routes):
   """
   return Route(name, routes)
 
-def endpoint(url, view, methods=None):
+def endpoint(url, view, methods=None, name=None):
   """ Creates a new endpoint. An endpoint points to a specific view or view class.
   Example:
 
@@ -27,7 +27,7 @@ def endpoint(url, view, methods=None):
   Creates an endpoint at "/api/myendpoint" which uses the view MyView, and only
   accepts the HTTP methods "GET" and "POST"
   """
-  return Endpoint(url, view, methods)
+  return Endpoint(url, view, methods=methods, name=name)
 
 
 class BaseRoute:
@@ -57,20 +57,20 @@ class Route(BaseRoute):
 
 
 class Endpoint(BaseRoute):
-  def __init__(self, url, view, methods=None):
+  def __init__(self, url, view, methods=None, name=None):
     self.view = view
     self.url = url
 
-    if methods:
-      self.methods = methods
-    else:
-      self.methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    if not url and not name:
+      raise TypeError("An endpoint without a url must have a name")
+
+    self.name = name or self.url
+    self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
   def register(self, app, parts):
     """ Registers the endpoint with the app with the given name for lookups """
-    parts += [self.url]
-    name = ".".join(parts)
-    url = "/%s" % "/".join(parts)
+    name = ".".join(parts + [self.name])
+    url = "/%s" % "/".join(parts + [self.url])
 
     if TRAILING_SLASHES:
       url += "/"
