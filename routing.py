@@ -4,13 +4,13 @@ import flask.views
 TRAILING_SLASHES = False
 
 
-def route(name, routes):
-  """ Creates a new route definition. A route is considered the part of the URL
+def path(name, routes):
+  """ Creates a new path definition. A path is considered the part of the URL
   that comes before the last forward slash. For example, `/user/account/` has a
-  route of `/user/account` and the page is `/`. If the trailing slash is missing,
-  the route would be `/user` and the page would be `/account`
+  path of `/user/account` and the page is `/`. If the trailing slash is missing,
+  the path would be `/user` and the page would be `/account`
   """
-  return Route(name, routes)
+  return Path(name, routes)
 
 def instance(param, routes, name=None):
   """ Creates a new instance definition. An instance is a dynamic part of the
@@ -26,20 +26,20 @@ def page(url, view, methods=None, name=None):
   return Page(url, view, methods=methods, name=name)
 
 
-class BaseRoute:
+class BaseRouteComponent:
   def register(self, app, url_parts, name_parts):
     pass
 
 
-class Route(BaseRoute):
+class Path(BaseRouteComponent):
   def __init__(self, name, routes):
     self.name = name
     self.routes = routes
 
   def register(self, app, url_parts=None, name_parts=None):
     for r in self.routes:
-      if not isinstance(r, BaseRoute):
-        raise TypeError("Child must be a subclass of BaseRoute (is %s)" % r)
+      if not isinstance(r, BaseRouteComponent):
+        raise TypeError("Child must be a subclass of BaseRouteComponent (is %s)" % r)
 
       if not url_parts:
         url_parts = []
@@ -47,7 +47,7 @@ class Route(BaseRoute):
       if not name_parts:
         name_parts = []
       elif not self.name:
-        raise ValueError("Nested route cannot have an empty name")
+        raise ValueError("Nested path cannot have an empty name")
 
       if self.name:
         name_parts += [self.name]
@@ -56,7 +56,7 @@ class Route(BaseRoute):
       r.register(app, url_parts, name_parts)
 
 
-class Instance(BaseRoute):
+class Instance(BaseRouteComponent):
   def __init__(self, param, routes, name=None):
     if param.startswith("/") or param.endswith("/"):
       raise ValueError("An instance parameter cannot start or end with a slash")
@@ -67,11 +67,11 @@ class Instance(BaseRoute):
 
   def register(self, app, url_parts=None, name_parts=None):
     if url_parts is None or name_parts is None:
-      raise Exception("An instance parameter must be wrapped in a route")
+      raise Exception("An instance parameter must be wrapped in a path")
 
     for r in self.routes:
-      if not isinstance(r, BaseRoute):
-        raise TypeError("Child must be a subclass of BaseRoute (is %s)" % r)
+      if not isinstance(r, BaseRouteComponent):
+        raise TypeError("Child must be a subclass of BaseRouteComponent (is %s)" % r)
 
       url_parts += [self.param]
 
@@ -81,7 +81,7 @@ class Instance(BaseRoute):
       r.register(app, url_parts, name_parts)
 
 
-class Page(BaseRoute):
+class Page(BaseRouteComponent):
   def __init__(self, url, view, methods=None, name=None):
     self.view = view
     self.url = url.lstrip("/")
@@ -98,7 +98,7 @@ class Page(BaseRoute):
     url = "/%s" % "/".join(url_parts + [self.url]).rstrip("/")
 
     # Append a trailing slash to the URL if we're doing that for every URL or if
-    # this route was defined explicitly with a trailing slash
+    # this path was defined explicitly with a trailing slash
     if TRAILING_SLASHES or self.url.endswith("/"):
       url += "/"
 

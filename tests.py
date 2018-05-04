@@ -1,7 +1,7 @@
 import flask.views
 from unittest.mock import Mock, patch
 
-from routing import instance, page, route
+from routing import instance, page, path
 
 
 class BadViewClass: pass
@@ -17,8 +17,8 @@ def new_mock():
 def test_no_endpoints():
   m, mock = new_mock()
 
-  route("test1", [
-    route("test2", [])
+  path("test1", [
+    path("test2", [])
   ]).register(m)
 
   assert not m.called
@@ -26,7 +26,7 @@ def test_no_endpoints():
 def test_view_class():
   m, mock = new_mock()
 
-  route("dir", [
+  path("dir", [
     page("page", ViewClass)
   ]).register(mock)
 
@@ -41,7 +41,7 @@ def test_view_class():
 def test_view_function():
   m, mock = new_mock()
 
-  route("dir", [
+  path("dir", [
     page("page", view_func)
   ]).register(mock)
 
@@ -57,7 +57,7 @@ def test_view_function():
 def test_trailing_slashes():
   m, mock = new_mock()
   
-  route("dir", [
+  path("dir", [
     page("page", view_func)
   ]).register(mock)
 
@@ -68,7 +68,7 @@ def test_trailing_slashes():
 def test_empty_route():
   m, mock = new_mock()
 
-  route("", [
+  path("", [
     page("page", view_func)
   ]).register(mock)
 
@@ -80,8 +80,8 @@ def test_bad_nested_empty_route():
   m, mock = new_mock()
 
   try:
-    route("dir", [
-      route("", [
+    path("dir", [
+      path("", [
         page("page", view_func)
       ])
     ]).register(mock)
@@ -93,7 +93,7 @@ def test_bad_nested_empty_route():
 def test_empty_endpoint():
   m, mock = new_mock()
 
-  route("", [
+  path("", [
     page("", view_func, name="page")
   ]).register(mock)
 
@@ -106,7 +106,7 @@ def test_bad_empty_endpoint():
   m, mock = new_mock()
 
   try:
-    route("", [
+    path("", [
       page("", view_func)
     ]).register(mock)
 
@@ -117,7 +117,7 @@ def test_bad_empty_endpoint():
 def test_all_methods():
   m, mock = new_mock()
 
-  route("", [
+  path("", [
     page("page", view_func)
   ]).register(mock)
 
@@ -128,7 +128,7 @@ def test_all_methods():
 def test_some_methods():
   m, mock = new_mock()
 
-  route("", [
+  path("", [
     page("page", view_func, methods=["GET", "POST"])
   ]).register(mock)
 
@@ -140,7 +140,7 @@ def test_bad_view_class():
   m, mock = new_mock()
 
   try:
-    route("", [
+    path("", [
       page("page", BadViewClass)
     ]).register(mock)
 
@@ -152,7 +152,7 @@ def test_bad_route_child():
   m, mock = new_mock()
 
   try:
-    route("", [
+    path("", [
       "page"
     ]).register(mock)
 
@@ -163,7 +163,7 @@ def test_bad_route_child():
 def test_leading_slash():
   m, mock = new_mock()
 
-  route("dir", [
+  path("dir", [
     page("/page", view_func)
   ]).register(mock)
 
@@ -174,7 +174,7 @@ def test_leading_slash():
 def test_explicit_trailing_slash():
   m, mock = new_mock()
 
-  route("dir", [
+  path("dir", [
     page("/page/", view_func)
   ]).register(mock)
 
@@ -185,7 +185,7 @@ def test_explicit_trailing_slash():
 def test_instance():
   m, mock = new_mock()
 
-  route("dir", [
+  path("dir", [
     instance("<int:instanceid>", [
       page("page", view_func)
     ])
@@ -199,7 +199,7 @@ def test_instance():
 def test_named_instance():
   m, mock = new_mock()
 
-  route("dir", [
+  path("dir", [
     instance("<int:instanceid>", name="instance", routes=[
       page("page", view_func)
     ])
