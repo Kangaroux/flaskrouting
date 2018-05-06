@@ -119,6 +119,30 @@ def test_page_slash_with_path():
   assert kwargs["rule"] == "/dir/page/"
   assert kwargs["endpoint"] == "dir.page"
 
+def test_empty_path_empty_page_with_slash():
+  m, mock = new_mock()
+
+  path("", [
+    page("/", view_func, name="home")
+  ]).register(mock)
+
+  _, kwargs = m.call_args
+
+  assert kwargs["rule"] == "/"
+  assert kwargs["endpoint"] == "home"
+
+def test_empty_page_with_slash():
+  m, mock = new_mock()
+
+  path("dir", [
+    page("/", view_func, name="home")
+  ]).register(mock)
+
+  _, kwargs = m.call_args
+
+  assert kwargs["rule"] == "/dir/"
+  assert kwargs["endpoint"] == "dir.home"
+
 def test_bad_empty_page():
   m, mock = new_mock()
 

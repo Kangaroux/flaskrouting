@@ -118,7 +118,7 @@ class Page(BaseRouteComponent):
 
     # Append a trailing slash to the URL if we're doing that for every URL or if
     # this path was defined explicitly with a trailing slash
-    if TRAILING_SLASHES or self.url.endswith("/"):
+    if not url.endswith("/") and (TRAILING_SLASHES or self.url.endswith("/")):
       url += "/"
 
     try:
