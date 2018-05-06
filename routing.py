@@ -40,23 +40,23 @@ class Path(BaseRouteComponent):
     self.routes = routes
 
   def register(self, app, url_parts=None, name_parts=None):
+    if url_parts is not None and not self.name:
+      raise ValueError("Nested path cannot have an empty name")
+
+    if url_parts is None:
+      url_parts = []
+
+    if name_parts is None:
+      name_parts = []
+
     for r in self.routes:
       if not isinstance(r, BaseRouteComponent):
         raise TypeError("Child must be a subclass of BaseRouteComponent (is %s)" % r)
 
-      if not url_parts:
-        url_parts = []
-
-      if not name_parts:
-        name_parts = []
-      elif not self.name:
-        raise ValueError("Nested path cannot have an empty name")
-
       if self.name:
-        name_parts += [self.name]
-        url_parts += [self.name]
-
-      r.register(app, url_parts, name_parts)
+        r.register(app, url_parts + [self.name], name_parts + [self.name])
+      else:
+        r.register(app, url_parts, name_parts)
 
 
 class Variable(BaseRouteComponent):
@@ -76,12 +76,10 @@ class Variable(BaseRouteComponent):
       if not isinstance(r, BaseRouteComponent):
         raise TypeError("Child must be a subclass of BaseRouteComponent (is %s)" % r)
 
-      url_parts += [self.param]
-
       if self.name:
-        name_parts += [self.name]
-
-      r.register(app, url_parts, name_parts)
+        r.register(app, url_parts + [self.param], name_parts + [self.name])
+      else:
+        r.register(app, url_parts + [self.param], name_parts)
 
 
 class Page(BaseRouteComponent):
@@ -104,10 +102,10 @@ class Page(BaseRouteComponent):
   def register(self, app, url_parts, name_parts):
     """ Registers the page with the app with the given name for lookups """
     if self.name:
-      name_parts += [self.name]
+      name_parts = name_parts.copy() + [self.name]
 
     if self.url:
-      url_parts += [self.url]
+      url_parts = url_parts.copy() + [self.url]
 
     if not name_parts:
       raise Exception("A page or parent path must have a name")
@@ -135,7 +133,7 @@ class Page(BaseRouteComponent):
     else:
       view = app.view_functions.get(name, self.view)
 
-    app.add_url_rule(url,
+    app.add_url_rule(rule=url,
       endpoint=name,
       view_func=view,
       methods=self.methods,

@@ -31,9 +31,9 @@ def test_view_class():
   ]).register(mock)
 
   assert m.called
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page"
+  assert kwargs["rule"] == "/dir/page"
   assert kwargs["endpoint"] == "dir.page"
 
   assert mock.view_functions.get.call_args[0][1].view_class == ViewClass
@@ -46,9 +46,9 @@ def test_view_function():
   ]).register(mock)
 
   assert m.called
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page"
+  assert kwargs["rule"] == "/dir/page"
   assert kwargs["endpoint"] == "dir.page"
 
   assert mock.view_functions.get.call_args[0][1] == view_func
@@ -61,20 +61,25 @@ def test_trailing_slashes():
     page("page", view_func)
   ]).register(mock)
 
-  args, _ = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page/"
+  assert kwargs["rule"] == "/dir/page/"
 
 def test_empty_route():
   m, mock = new_mock()
 
   path("", [
-    page("page", view_func)
+    page("page1", view_func),
+    page("page2", view_func)
   ]).register(mock)
 
-  args, _ = m.call_args
+  _, kwargs = m.call_args_list[0]
+  assert kwargs["rule"] == "/page1"
+  assert kwargs["endpoint"] == "page1"
 
-  assert args[0] == "/page"
+  _, kwargs = m.call_args_list[1]
+  assert kwargs["rule"] == "/page2"
+  assert kwargs["endpoint"] == "page2"
 
 def test_bad_nested_empty_route():
   m, mock = new_mock()
@@ -97,9 +102,9 @@ def test_page_with_name_no_path():
     page("", view_func, name="page")
   ]).register(mock)
 
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/"
+  assert kwargs["rule"] == "/"
   assert kwargs["endpoint"] == "page"
 
 def test_page_slash_with_path():
@@ -109,9 +114,9 @@ def test_page_slash_with_path():
     page("/page/", view_func)
   ]).register(mock)
 
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page/"
+  assert kwargs["rule"] == "/dir/page/"
   assert kwargs["endpoint"] == "dir.page"
 
 def test_bad_empty_page():
@@ -179,9 +184,9 @@ def test_leading_slash():
     page("/page", view_func)
   ]).register(mock)
 
-  args, _ = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page"
+  assert kwargs["rule"] == "/dir/page"
 
 def test_explicit_trailing_slash():
   m, mock = new_mock()
@@ -190,11 +195,11 @@ def test_explicit_trailing_slash():
     page("/page/", view_func)
   ]).register(mock)
 
-  args, _ = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page/"
+  assert kwargs["rule"] == "/dir/page/"
 
-def test_instance():
+def test_variable():
   m, mock = new_mock()
 
   path("dir", [
@@ -203,12 +208,12 @@ def test_instance():
     ])
   ]).register(mock)
 
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/<int:var>/page"
+  assert kwargs["rule"] == "/dir/<int:var>/page"
   assert kwargs["endpoint"] == "dir.page"
 
-def test_named_instance():
+def test_named_variable():
   m, mock = new_mock()
 
   path("dir", [
@@ -217,12 +222,12 @@ def test_named_instance():
     ])
   ]).register(mock)
 
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/<int:var>/page"
+  assert kwargs["rule"] == "/dir/<int:var>/page"
   assert kwargs["endpoint"] == "dir.var.page"
 
-def test_bad_instance():
+def test_bad_variable():
   m, mock = new_mock()
 
   try:
@@ -236,7 +241,7 @@ def test_bad_instance():
   except ValueError:
     pass
 
-def test_root_instance():
+def test_root_variable():
   m, mock = new_mock()
 
   try:
@@ -248,7 +253,7 @@ def test_root_instance():
   except Exception:
     pass
 
-def test_bad_instance_child():
+def test_bad_variable_child():
   m, mock = new_mock()
 
   try:
@@ -269,9 +274,9 @@ def test_leading_slash_path():
     page("/page", view_func)
   ]).register(mock)
 
-  args, kwargs = m.call_args
+  _, kwargs = m.call_args
 
-  assert args[0] == "/dir/page"
+  assert kwargs["rule"] == "/dir/page"
   assert kwargs["endpoint"] == "dir.page"
 
 def test_bad_path_trailing_slash():
@@ -286,5 +291,24 @@ def test_bad_path_trailing_slash():
   except ValueError:
     pass
 
-def test_same_view_instance():
-  pass
+def test_url_defaults():
+  m, mock = new_mock()
+  
+  path("dir", [
+    page("", view_func, defaults={ "var": 1 }),
+    var("<int:var>", [
+      page("", view_func),
+    ])
+  ]).register(mock)
+
+  _, kwargs = m.call_args_list[0]
+
+  assert kwargs["rule"] == "/dir"
+  assert kwargs["endpoint"] == "dir"
+  assert kwargs["defaults"] == { "var": 1 }
+
+  _, kwargs = m.call_args_list[1]
+
+  assert kwargs["rule"] == "/dir/<int:var>"
+  assert kwargs["endpoint"] == "dir"
+  assert "defaults" not in kwargs
