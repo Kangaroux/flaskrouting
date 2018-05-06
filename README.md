@@ -1,10 +1,10 @@
-# flask-routing
+# flaskrouting
 
-Writing routes in flask is cumbersome. There is a lot of boilerplate code and duplication. flask-routing lets you quickly define your site's routes how you want with as little code as possible.
+Writing routes in flask is cumbersome. There is a lot of boilerplate and the API is very restrictive. `flaskrouting` lets you quickly define your site's routes how you want with as little code as possible.
 
 ## Getting Started
 
-Install flask-routing with `pip install flask-routing`
+Install `flaskrouting` with `pip install flaskrouting`
 
 Here's some routing for a simple blog site:
 
@@ -27,7 +27,9 @@ routes = path("", [
 routes.register(app)
 ```
 
-We've defined 4 pages by using `var`, `page`, and `path`. The URLs for each page are built up one piece at a time. As a result, related URLs are implicitly grouped together and you don't need to duplicate any code. Here are the reverse lookups for each route:
+This creates 4 routes by using `var`, `page`, and `path`. The URLs for each page are built up one piece at a time. As a result, related URLs are grouped together, and there is no need to duplicate any code.
+
+Here are the reverse lookups for each route:
 
 ```python
 url_for("home")                   => "/"
@@ -45,7 +47,7 @@ To register the routes, simply call `register()` and provide the flask applicati
 
 Default: `False`
 
-If `TRAILING_SLASHES = False`, flask-routing will not append a trailing slash to URLs unless you explicitly define them with one. To always append a trailing slash, set `flaskrouting.TRAILING_SLASHES = True` before calling the `register()` method.
+If `TRAILING_SLASHES = False`, `flaskrouting` will not append a trailing slash to URLs unless you explicitly define them with one. To always append a trailing slash, set `flaskrouting.TRAILING_SLASHES = True` before calling the `register()` method.
 
 # Reference
 
