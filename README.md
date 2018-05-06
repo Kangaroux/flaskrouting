@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/Kangaroux/flaskrouting.svg?branch=master)](https://travis-ci.org/Kangaroux/flaskrouting)
+[![Coverage Status](https://coveralls.io/repos/github/Kangaroux/flaskrouting/badge.svg?branch=master)](https://coveralls.io/github/Kangaroux/flaskrouting?branch=master)
+[![PyPI version](https://badge.fury.io/py/flaskrouting.svg)](https://badge.fury.io/py/flaskrouting)
+
 # flaskrouting
 
 Writing routes in flask is cumbersome. There is a lot of boilerplate and the API is very restrictive. `flaskrouting` lets you quickly define your site's routes how you want with as little code as possible.
