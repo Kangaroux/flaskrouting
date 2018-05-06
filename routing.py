@@ -12,14 +12,14 @@ def path(name, routes):
   """
   return Path(name, routes)
 
-def instance(param, routes, name=None):
-  """ Creates a new instance definition. An instance is a dynamic part of the
+def var(param, routes, name=None):
+  """ Creates a new variable definition. An variable is a dynamic part of the
   URL that gets passed to the view as a parameter. For example,
-  `/user/<int:userid>` has an instance variable `userid`.
+  `/user/<int:userid>` has an variable variable `userid`.
   """
-  return Instance(param, routes, name) 
+  return Variable(param, routes, name) 
 
-def page(url, view, methods=None, name=None):
+def page(url, view, name=None, methods=None):
   """ Creates a new page definition. A page points to the actual view that will
   process the request. 
   """
@@ -59,10 +59,10 @@ class Path(BaseRouteComponent):
       r.register(app, url_parts, name_parts)
 
 
-class Instance(BaseRouteComponent):
+class Variable(BaseRouteComponent):
   def __init__(self, param, routes, name=None):
     if param.startswith("/") or param.endswith("/"):
-      raise ValueError("An instance parameter cannot start or end with a slash")
+      raise ValueError("A variable parameter cannot start or end with a slash")
 
     self.name = name
     self.param = param
@@ -70,7 +70,7 @@ class Instance(BaseRouteComponent):
 
   def register(self, app, url_parts=None, name_parts=None):
     if url_parts is None or name_parts is None:
-      raise Exception("An instance parameter must be wrapped in a path")
+      raise Exception("A variable parameter must be wrapped in a path")
 
     for r in self.routes:
       if not isinstance(r, BaseRouteComponent):

@@ -1,7 +1,7 @@
 import flask.views
 from unittest.mock import Mock, patch
 
-from routing import instance, page, path
+from routing import var, page, path
 
 
 class BadViewClass: pass
@@ -198,36 +198,36 @@ def test_instance():
   m, mock = new_mock()
 
   path("dir", [
-    instance("<int:instanceid>", [
+    var("<int:var>", [
       page("page", view_func)
     ])
   ]).register(mock)
 
   args, kwargs = m.call_args
 
-  assert args[0] == "/dir/<int:instanceid>/page"
+  assert args[0] == "/dir/<int:var>/page"
   assert kwargs["endpoint"] == "dir.page"
 
 def test_named_instance():
   m, mock = new_mock()
 
   path("dir", [
-    instance("<int:instanceid>", name="instance", routes=[
+    var("<int:var>", name="var", routes=[
       page("page", view_func)
     ])
   ]).register(mock)
 
   args, kwargs = m.call_args
 
-  assert args[0] == "/dir/<int:instanceid>/page"
-  assert kwargs["endpoint"] == "dir.instance.page"
+  assert args[0] == "/dir/<int:var>/page"
+  assert kwargs["endpoint"] == "dir.var.page"
 
 def test_bad_instance():
   m, mock = new_mock()
 
   try:
     path("dir", [
-      instance("/<int:instanceid>/", [
+      var("/<int:var>/", [
         page("page", view_func)
       ])
     ]).register(mock)
@@ -240,7 +240,7 @@ def test_root_instance():
   m, mock = new_mock()
 
   try:
-    instance("<int:instanceid>", [
+    var("<int:var>", [
       page("page", view_func)
     ]).register(mock)
 
@@ -253,7 +253,7 @@ def test_bad_instance_child():
 
   try:
     path("dir", [
-      instance("<int:instanceid>", [
+      var("<int:var>", [
         view_func
       ])
     ]).register(mock)
@@ -285,3 +285,6 @@ def test_bad_path_trailing_slash():
     assert 0
   except ValueError:
     pass
+
+def test_same_view_instance():
+  pass
