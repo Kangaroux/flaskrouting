@@ -1,7 +1,7 @@
 import flask.views
 from unittest.mock import Mock, patch
 
-from routing import var, page, path
+from flaskrouting import var, page, path
 
 
 class BadViewClass: pass
@@ -53,7 +53,7 @@ def test_view_function():
 
   assert mock.view_functions.get.call_args[0][1] == view_func
 
-@patch("routing.TRAILING_SLASHES", True)
+@patch("flaskrouting.TRAILING_SLASHES", True)
 def test_trailing_slashes():
   m, mock = new_mock()
   
