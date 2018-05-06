@@ -19,11 +19,11 @@ def var(param, routes, name=None):
   """
   return Variable(param, routes, name) 
 
-def page(url, view, name=None, methods=None):
+def page(url, view, name=None, methods=None, **options):
   """ Creates a new page definition. A page points to the actual view that will
   process the request. 
   """
-  return Page(url, view, methods=methods, name=name)
+  return Page(url, view, methods=methods, name=name, **options)
 
 
 class BaseRouteComponent:
@@ -85,7 +85,7 @@ class Variable(BaseRouteComponent):
 
 
 class Page(BaseRouteComponent):
-  def __init__(self, url, view, methods=None, name=None):
+  def __init__(self, url, view, methods=None, name=None, **options):
     self.view = view
 
     if url == "/":
@@ -99,6 +99,7 @@ class Page(BaseRouteComponent):
       self.name = self.url.strip("/") or None
 
     self.methods = methods or ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    self.options = options
 
   def register(self, app, url_parts, name_parts):
     """ Registers the page with the app with the given name for lookups """
@@ -137,4 +138,5 @@ class Page(BaseRouteComponent):
     app.add_url_rule(url,
       endpoint=name,
       view_func=view,
-      methods=self.methods)
+      methods=self.methods,
+      **self.options)
